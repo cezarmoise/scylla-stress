@@ -1,14 +1,36 @@
 # Scylla DB Stress Test results agregator
 
 
-### Steps:
+Create and start a scylladb docker container  
+```
+$ docker run --name scylla-stress --hostname scylla-stress -d scylladb/scylla
+```
 
-1. Create and start a scylladb docker container  
-    `docker run --name scylla-stress --hostname scylla-stress -d scylladb/scylla`  
-    If already created, just start it  
-    `docker start scylla-stress`
+If already created, just start it  
+```
+$ docker start scylla-stress
+```
 
-2. Run `python3 analysis.py -n 5` to run five stress tests in paralell
+
+Run `analysis.py` 
+```
+$ python3 analysis.py -n 10
+Number of concurrent stress tests   : 10
+Op rate                   [sum]     : 59392.0 op/s
+Latency mean              [average] : 1.6 ms
+Latency 99th percentile   [average] : 11.35 ms
+Latency max               [std dev] : 39.06 ms
+```
+
+
+Ensure there is no other container started on the same ports.
+In the example bellow, the program will fail to connect to scylla
+```
+$ docker ps
+CONTAINER ID   IMAGE             COMMAND                  CREATED         STATUS         PORTS                                                            NAMES
+a0dc02645480   scylladb/scylla   "/docker-entrypoint.…"   7 seconds ago   Up 7 seconds   22/tcp, 7000-7001/tcp, 9042/tcp, 9160/tcp, 9180/tcp, 10000/tcp   scylla-stress2
+0cf66f788801   scylladb/scylla   "/docker-entrypoint.…"   24 hours ago    Up 2 minutes   22/tcp, 7000-7001/tcp, 9042/tcp, 9160/tcp, 9180/tcp, 10000/tcp   scylla-stress
+```
 
 
 ### Tasks:
