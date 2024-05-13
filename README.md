@@ -8,7 +8,7 @@
     If already created, just start it  
     `docker start scylla-stress`
 
-2. Run `python3 analysis.py`
+2. Run `python3 analysis.py -n 5` to run five stress tests in paralell
 
 
 ### Tasks:
@@ -18,4 +18,4 @@
 - [x] Extract the needed results fron the output of the stress command
 - [x] Run the stress command multiple times and aggregate the results
 - [x] Parallelize running the stress command
-- [ ] Add command-line arguments for number of concurrent stress commands
+- [x] Add command-line arguments for number of concurrent stress commands

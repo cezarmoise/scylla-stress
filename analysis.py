@@ -5,6 +5,7 @@ import re
 import locale
 import statistics
 import asyncio
+import argparse
 
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
@@ -74,9 +75,17 @@ def results_agregator(list_of_results):
 
 
 async def main():
-    nr_of_commands = 5
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-n', 
+        dest='number_of_commands',
+        type=int,
+        default=2,  # minimun nr of results required to be able to calculate stdev
+        help='The number of concurent stress tests to run'
+        )
+    args = parser.parse_args()
     node_ip = get_node_ip(CONTAINER_NAME)
-    tasks = [run_cassandra_stress(CONTAINER_NAME, node_ip) for _ in range(nr_of_commands)]
+    tasks = [run_cassandra_stress(CONTAINER_NAME, node_ip) for _ in range(args.number_of_commands)]
     results = await asyncio.gather(*tasks)
     results_agregator(results)
 
