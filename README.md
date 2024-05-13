@@ -19,3 +19,5 @@
 - [x] Run the stress command multiple times and aggregate the results
 - [x] Parallelize running the stress command
 - [x] Add command-line arguments for number of concurrent stress commands
+- [x] Consolidate code regarding which stats from the output are selected
+- [x] Improve result formating
