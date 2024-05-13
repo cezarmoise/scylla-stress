@@ -17,5 +17,5 @@
 - [x] Run the the cassandra-stress command
 - [x] Extract the needed results fron the output of the stress command
 - [x] Run the stress command multiple times and aggregate the results
-- [ ] Parallelize running the stress command
+- [x] Parallelize running the stress command
 - [ ] Add command-line arguments for number of concurrent stress commands

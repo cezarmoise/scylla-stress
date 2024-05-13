@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-from subprocess import Popen, STDOUT, PIPE
+import subprocess
 import re
 import locale
 import statistics
+import asyncio
 
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
@@ -12,7 +13,7 @@ CONTAINER_NAME = "scylla-stress"
 
 def get_node_ip(name):
     cmd = f"docker exec -it {name} nodetool status"
-    process = Popen(cmd, shell=True, stderr=STDOUT, stdout=PIPE, encoding='utf-8')
+    process = subprocess.Popen(cmd, shell=True, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding='utf-8')
     output, _ = process.communicate()
     matches = re.findall(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b', output)
     if len(matches) != 1:
@@ -20,11 +21,11 @@ def get_node_ip(name):
     return matches[0]
 
 
-def run_cassandra_stress(name, node_ip):
+async def run_cassandra_stress(name, node_ip):
     cmd = f'docker exec {name} cassandra-stress write duration=10s -rate threads=10 -node {node_ip}'
-    process = Popen(cmd, shell=True, stderr=STDOUT, stdout=PIPE, encoding='utf-8')
-    output, _ = process.communicate()
-    lines = output.splitlines()
+    process = await asyncio.create_subprocess_shell(cmd, shell=True, stderr=asyncio.subprocess.STDOUT, stdout=asyncio.subprocess.PIPE)
+    output, _ = await process.communicate()
+    lines = output.decode().splitlines()
     results = lines[lines.index("Results:")+1:-2]
     return interpret_results(results)
 
@@ -66,13 +67,18 @@ def results_agregator(list_of_results):
         'Latency max': statistics.stdev
     }
 
+    print('Number of concurrent stress tests:', len(list_of_results))
     for k, v in units.items():
         aggragate = op[k](r[k] for r in list_of_results)
         print(f'{k}: {aggragate:.2f} {v}')
 
 
-if __name__ == "__main__":
+async def main():
+    nr_of_commands = 5
     node_ip = get_node_ip(CONTAINER_NAME)
-    results = run_cassandra_stress(CONTAINER_NAME, node_ip)
-    results2 = run_cassandra_stress(CONTAINER_NAME, node_ip)
-    results_agregator([results, results2])
+    tasks = [run_cassandra_stress(CONTAINER_NAME, node_ip) for _ in range(nr_of_commands)]
+    results = await asyncio.gather(*tasks)
+    results_agregator(results)
+
+if __name__ == "__main__":
+    asyncio.run(main())
