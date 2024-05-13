@@ -6,10 +6,10 @@ import locale
 import statistics
 import asyncio
 import argparse
+from container_utils import ensure_docker
 
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-CONTAINER_NAME = "scylla-stress"
 RESULTS = {
         'Op rate': {
             'aggregate_fun': sum,
@@ -85,9 +85,17 @@ async def main():
         default=2,  # minimun nr of results required to be able to calculate stdev
         help='The number of concurent stress tests to run'
         )
+    parser.add_argument(
+        '--name', 
+        dest='name',
+        type=str,
+        default='scylla-stress',
+        help='The name of the docker container to run stress tests on'
+        )
     args = parser.parse_args()
-    node_ip = get_node_ip(CONTAINER_NAME)
-    tests = [run_cassandra_stress(CONTAINER_NAME, node_ip) for _ in range(args.number_of_tests)]
+    ensure_docker(args.name)
+    node_ip = get_node_ip(args.name)
+    tests = [run_cassandra_stress(args.name, node_ip) for _ in range(args.number_of_tests)]
     results = await asyncio.gather(*tests)
     results_aggregator(results)
 
